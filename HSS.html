@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HSS · Handler Sticker System — Dawon Systems</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --black:   #080809;
+      --white:   #F0EEE9;
+      --dim:     rgba(240,238,233,0.45);
+      --accent:  #C8A96E;
+      --accent2: #4A7FA5;
+      --nav-h:   64px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--black);
+      color: var(--white);
+      font-family: 'Syne', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* NOISE */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.035;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* ══ NAVBAR ══ */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: var(--nav-h);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 48px;
+      z-index: 1000;
+      background: rgba(8,8,9,0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(240,238,233,0.06);
+    }
+
+    .nav-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
+      letter-spacing: 0.12em;
+      color: var(--white);
+      text-decoration: none;
+    }
+    .nav-logo span { color: var(--accent); }
+
+    .nav-back {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--dim);
+      text-decoration: none;
+      transition: color 200ms;
+    }
+    .nav-back:hover { color: var(--white); }
+    .nav-back svg { width: 14px; height: 14px; }
+
+    .nav-download {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--black);
+      background: var(--white);
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 200ms;
+    }
+    .nav-download:hover { background: var(--accent); }
+
+    /* ══ HERO ══ */
+    #hero {
+      position: relative;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 0 64px 80px;
+      overflow: hidden;
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+    }
+    .hero-bg img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.5;
+    }
+    .hero-bg-placeholder {
+      width: 100%;
+      height: 100%;
+      background:
+        radial-gradient(ellipse 60% 50% at 65% 40%, rgba(74,127,165,0.2) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 60% at 20% 70%, rgba(200,169,110,0.12) 0%, transparent 60%),
+        var(--black);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .ph-text {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      color: rgba(240,238,233,0.1);
+      text-transform: uppercase;
+      border: 1px solid rgba(240,238,233,0.05);
+      padding: 12px 24px;
+    }
+
+    .hero-gradient {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(8,8,9,0.97) 0%, rgba(8,8,9,0.4) 50%, rgba(8,8,9,0.2) 100%);
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.25em;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 16px;
+      opacity: 0;
+      animation: fadeUp 700ms 200ms forwards;
+    }
+
+    .hero-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(72px, 12vw, 160px);
+      line-height: 0.9;
+      letter-spacing: 0.02em;
+      opacity: 0;
+      animation: fadeUp 800ms 350ms forwards;
+    }
+
+    .hero-subtitle {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--dim);
+      margin-top: 12px;
+      opacity: 0;
+      animation: fadeUp 700ms 500ms forwards;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      margin-top: 36px;
+      opacity: 0;
+      animation: fadeUp 700ms 650ms forwards;
+    }
+
+    .btn-primary {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--black);
+      background: var(--white);
+      border: none;
+      padding: 14px 32px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      transition: background 200ms;
+    }
+    .btn-primary:hover { background: var(--accent); }
+    .btn-primary svg { width: 14px; height: 14px; }
+
+    .btn-ghost {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--dim);
+      background: transparent;
+      border: 1px solid rgba(240,238,233,0.18);
+      padding: 14px 32px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: color 200ms, border-color 200ms;
+    }
+    .btn-ghost:hover { color: var(--white); border-color: rgba(240,238,233,0.5); }
+
+    /* ══ GALERÍA ESTILO STEAM ══ */
+    #gallery {
+      padding: 80px 64px;
+      border-top: 1px solid rgba(240,238,233,0.06);
+    }
+
+    .gallery-main {
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: #0d0d0f;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+
+    /* Vista principal — imagen */
+    .gallery-main img#main-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+    }
+
+    /* Vista principal — video YouTube */
+    .gallery-main iframe#main-video {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: none;
+    }
+
+    /* Placeholder cuando no hay nada */
+    .gallery-main-ph {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0d0d0f;
+    }
+    .gallery-main-ph span {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      color: rgba(240,238,233,0.12);
+      text-transform: uppercase;
+      border: 1px solid rgba(240,238,233,0.06);
+      padding: 12px 24px;
+    }
+
+    /* Fila de miniaturas */
+    .gallery-thumbs {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(240,238,233,0.15) transparent;
+    }
+    .gallery-thumbs::-webkit-scrollbar { height: 3px; }
+    .gallery-thumbs::-webkit-scrollbar-track { background: transparent; }
+    .gallery-thumbs::-webkit-scrollbar-thumb { background: rgba(240,238,233,0.15); }
+
+    .thumb {
+      flex-shrink: 0;
+      width: 160px;
+      aspect-ratio: 16/9;
+      background: #111114;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      border: 2px solid transparent;
+      transition: border-color 200ms;
+    }
+    .thumb.active { border-color: var(--white); }
+    .thumb:hover { border-color: rgba(240,238,233,0.4); }
+
+    .thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Miniatura de video — overlay con ícono play */
+    .thumb-video {
+      width: 100%;
+      height: 100%;
+      background: #111114;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .thumb-video img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      position: absolute;
+      inset: 0;
+      opacity: 0.6;
+    }
+    .play-icon {
+      position: relative;
+      z-index: 2;
+      width: 36px;
+      height: 36px;
+      background: rgba(240,238,233,0.9);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .play-icon svg {
+      width: 14px;
+      height: 14px;
+      fill: var(--black);
+      margin-left: 2px;
+    }
+
+    /* Placeholder de miniatura */
+    .thumb-ph {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #111114;
+    }
+    .thumb-ph span {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.15em;
+      color: rgba(240,238,233,0.2);
+      text-transform: uppercase;
+      text-align: center;
+      padding: 0 8px;
+    }
+
+    /* ══ OVERVIEW ══ */
+    #overview {
+      padding: 100px 64px;
+      border-top: 1px solid rgba(240,238,233,0.06);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+
+    .section-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.25em;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    .overview-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(40px, 5vw, 72px);
+      line-height: 0.95;
+      letter-spacing: 0.02em;
+    }
+
+    .overview-text {
+      font-size: 15px;
+      color: var(--dim);
+      line-height: 1.8;
+      margin-bottom: 16px;
+    }
+
+    /* ══ CARACTERÍSTICAS ══ */
+    #features {
+      padding: 100px 64px;
+      border-top: 1px solid rgba(240,238,233,0.06);
+    }
+
+    .features-header {
+      margin-bottom: 56px;
+    }
+
+    .features-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(36px, 4vw, 56px);
+      letter-spacing: 0.02em;
+      margin-top: 12px;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2px;
+    }
+
+    .feature-card {
+      background: #0d0d0f;
+      border: 1px solid rgba(240,238,233,0.06);
+      padding: 40px 32px;
+      transition: border-color 300ms;
+    }
+    .feature-card:hover { border-color: rgba(240,238,233,0.15); }
+
+    .feature-icon {
+      width: 40px;
+      height: 40px;
+      margin-bottom: 24px;
+      color: var(--accent);
+    }
+    .feature-icon svg { width: 100%; height: 100%; }
+
+    .feature-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
+      letter-spacing: 0.04em;
+      margin-bottom: 12px;
+    }
+
+    .feature-desc {
+      font-size: 13px;
+      color: var(--dim);
+      line-height: 1.65;
+    }
+
+    /* ══ CÓMO FUNCIONA ══ */
+    #how {
+      padding: 100px 64px;
+      border-top: 1px solid rgba(240,238,233,0.06);
+    }
+
+    .how-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(36px, 4vw, 56px);
+      letter-spacing: 0.02em;
+      margin-top: 12px;
+      margin-bottom: 64px;
+    }
+
+    .how-steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+      position: relative;
+    }
+
+    .how-steps::before {
+      content: '';
+      position: absolute;
+      top: 24px;
+      left: calc(16.66% + 24px);
+      right: calc(16.66% + 24px);
+      height: 1px;
+      background: linear-gradient(to right, var(--accent), rgba(200,169,110,0.2));
+    }
+
+    .how-step {
+      padding: 0 40px 0 0;
+    }
+
+    .step-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 48px;
+      color: var(--accent);
+      line-height: 1;
+      margin-bottom: 20px;
+    }
+
+    .step-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 28px;
+      letter-spacing: 0.04em;
+      margin-bottom: 12px;
+    }
+
+    .step-desc {
+      font-size: 13px;
+      color: var(--dim);
+      line-height: 1.65;
+    }
+
+    /* ══ DESCARGA ══ */
+    #download {
+      padding: 120px 64px;
+      border-top: 1px solid rgba(240,238,233,0.06);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+
+    .download-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(48px, 6vw, 96px);
+      line-height: 0.9;
+      letter-spacing: 0.02em;
+    }
+    .download-title span { color: var(--accent); }
+
+    .download-sub {
+      margin-top: 20px;
+      font-size: 14px;
+      color: var(--dim);
+      line-height: 1.7;
+      max-width: 400px;
+    }
+
+    .download-right {
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+
+    .download-info {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .download-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 0;
+      border-bottom: 1px solid rgba(240,238,233,0.06);
+    }
+    .download-row:first-child { border-top: 1px solid rgba(240,238,233,0.06); }
+
+    .download-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--dim);
+    }
+
+    .download-value {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      color: var(--white);
+    }
+
+    .btn-download {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--black);
+      background: var(--white);
+      border: none;
+      padding: 18px 40px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      transition: background 200ms;
+      width: fit-content;
+    }
+    .btn-download:hover { background: var(--accent); }
+    .btn-download svg { width: 16px; height: 16px; }
+
+    .download-note {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      color: rgba(240,238,233,0.2);
+      text-transform: uppercase;
+    }
+
+    /* ══ FOOTER ══ */
+    footer {
+      padding: 40px 64px;
+      border-top: 1px solid rgba(240,238,233,0.06);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .footer-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 18px;
+      letter-spacing: 0.12em;
+      color: rgba(240,238,233,0.3);
+    }
+    .footer-logo span { color: var(--accent); opacity: 0.6; }
+    .footer-copy {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      color: rgba(240,238,233,0.2);
+      text-transform: uppercase;
+    }
+
+    /* ══ ANIMATIONS ══ */
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(32px);
+      transition: opacity 700ms ease, transform 700ms ease;
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-delay-1 { transition-delay: 100ms; }
+    .reveal-delay-2 { transition-delay: 200ms; }
+    .reveal-delay-3 { transition-delay: 300ms; }
+
+    /* ══ RESPONSIVE ══ */
+    @media (max-width: 900px) {
+      nav { padding: 0 24px; }
+      #hero { padding: 0 24px 60px; }
+      #gallery { padding: 48px 24px; }
+      .thumb { width: 120px; }
+      #overview { grid-template-columns: 1fr; gap: 40px; padding: 80px 24px; }
+      #features { padding: 80px 24px; }
+      .features-grid { grid-template-columns: 1fr 1fr; }
+      #how { padding: 80px 24px; }
+      .how-steps { grid-template-columns: 1fr; gap: 48px; }
+      .how-steps::before { display: none; }
+      #download { grid-template-columns: 1fr; gap: 48px; padding: 80px 24px; }
+      footer { padding: 32px 24px; flex-direction: column; gap: 16px; text-align: center; }
+    }
+
+    @media (max-width: 600px) {
+      .features-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ══ NAVBAR ══ -->
+  <nav>
+    <a href="../index.html" class="nav-logo">DAWON<span>.</span></a>
+    <a href="../index.html" class="nav-back">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      Volver
+    </a>
+    <a href="../downloads/hss-setup.exe" download class="nav-download">Descargar HSS</a>
+  </nav>
+
+  <!-- ══ HERO ══ -->
+  <section id="hero">
+    <div class="hero-bg">
+      <!-- REEMPLAZAR: <img src="../images/hss-hero.jpg" alt="HSS" /> -->
+      <div class="hero-bg-placeholder">
+        <div class="ph-text">imagen hero · 1920 × 1080</div>
+      </div>
+    </div>
+    <div class="hero-gradient"></div>
+    <div class="hero-content">
+      <p class="hero-tag">Dawon Systems · Línea PyME</p>
+      <h1 class="hero-title">HSS</h1>
+      <p class="hero-subtitle">Handler Sticker System · V1.0</p>
+      <div class="hero-actions">
+        <a href="../downloads/hss-setup.exe" download class="btn-primary">
+          Descargar
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15V3M7 10l5 5 5-5M3 17v2a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2"/></svg>
+        </a>
+        <a href="#gallery" class="btn-ghost">Ver galería</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ GALERÍA ══ -->
+  <section id="gallery">
+
+    <!-- Visor principal -->
+    <div class="gallery-main">
+      <img id="main-img" src="" alt="HSS" />
+      <iframe id="main-video"
+        src=""
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen>
+      </iframe>
+      <div class="gallery-main-ph" id="main-ph">
+        <span>Selecciona un elemento</span>
+      </div>
+    </div>
+
+    <!-- Miniaturas -->
+    <div class="gallery-thumbs">
+
+      <!-- MINIATURA VIDEO — REEMPLAZAR YOUR_YOUTUBE_ID por el ID real -->
+      <!-- Ejemplo: si tu video es https://youtu.be/dQw4w9WgXcQ, el ID es dQw4w9WgXcQ -->
+      <div class="thumb active" onclick="showVideo('YOUR_YOUTUBE_ID', this)">
+        <div class="thumb-video">
+          <!-- La thumbnail de YouTube se carga automáticamente con el ID -->
+          <img src="https://img.youtube.com/vi/YOUR_YOUTUBE_ID/mqdefault.jpg" alt="Video HSS" />
+          <div class="play-icon">
+            <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- MINIATURAS IMÁGENES — agregar o quitar según cuántas imágenes tengas -->
+      <div class="thumb" onclick="showImage('../images/hss-1.jpg', this)">
+        <img src="../images/hss-1.jpg" alt="HSS imagen 1"
+          onerror="this.parentElement.innerHTML='<div class=\'thumb-ph\'><span>Imagen 1</span></div>'" />
+      </div>
+
+      <div class="thumb" onclick="showImage('../images/hss-2.jpg', this)">
+        <img src="../images/hss-2.jpg" alt="HSS imagen 2"
+          onerror="this.parentElement.innerHTML='<div class=\'thumb-ph\'><span>Imagen 2</span></div>'" />
+      </div>
+
+      <div class="thumb" onclick="showImage('../images/hss-3.jpg', this)">
+        <img src="../images/hss-3.jpg" alt="HSS imagen 3"
+          onerror="this.parentElement.innerHTML='<div class=\'thumb-ph\'><span>Imagen 3</span></div>'" />
+      </div>
+
+      <div class="thumb" onclick="showImage('../images/hss-4.jpg', this)">
+        <img src="../images/hss-4.jpg" alt="HSS imagen 4"
+          onerror="this.parentElement.innerHTML='<div class=\'thumb-ph\'><span>Imagen 4</span></div>'" />
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══ OVERVIEW ══ -->
+  <section id="overview">
+    <div class="reveal">
+      <p class="section-tag">// Qué es HSS</p>
+      <h2 class="overview-title">GESTIÓN DE<br>PRODUCCIÓN<br>INTELIGENTE</h2>
+    </div>
+    <div class="reveal reveal-delay-1">
+      <p class="overview-text">HSS es un sistema completo de gestión y almacenamiento de stickers. Hardware y software integrados en un solo kit, listo para usar desde el primer día.</p>
+      <p class="overview-text">Sin suscripciones ni costos adicionales. Todo lo que necesitas viene incluido en la compra.</p>
+    </div>
+  </section>
+
+  <!-- ══ CARACTERÍSTICAS ══ -->
+  <section id="features">
+    <div class="features-header reveal">
+      <p class="section-tag">// Características</p>
+      <h2 class="features-title">LO QUE INCLUYE</h2>
+    </div>
+    <div class="features-grid">
+
+      <div class="feature-card reveal">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="2" y="7" width="20" height="14" rx="1"/>
+            <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+          </svg>
+        </div>
+        <h3 class="feature-name">HARDWARE MODULAR</h3>
+        <p class="feature-desc">Sistema de almacenamiento de stickers con cintas transportadoras y microcontroladores con WiFi para conexión directa con el software incluido.</p>
+      </div>
+
+      <div class="feature-card reveal reveal-delay-1">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <path d="M3 9h18M9 21V9"/>
+          </svg>
+        </div>
+        <h3 class="feature-name">PANEL WEB</h3>
+        <p class="feature-desc">Control total desde el navegador. Crea pedidos, gestiona inventario y monitorea producción en tiempo real.</p>
+      </div>
+
+      <div class="feature-card reveal reveal-delay-2">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          </svg>
+        </div>
+        <h3 class="feature-name">TIEMPO REAL</h3>
+        <p class="feature-desc">Conexión WebSocket entre el panel y el hardware. Los cambios se reflejan instantáneamente en la línea de producción.</p>
+      </div>
+
+      <div class="feature-card reveal reveal-delay-3">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+          </svg>
+        </div>
+        <h3 class="feature-name">ALMACÉN DIGITAL</h3>
+        <p class="feature-desc">Sistema de slots de almacenamiento con QR y códigos de barras. Cada pedido tiene su lugar y su historial.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══ CÓMO FUNCIONA ══ -->
+  <section id="how">
+    <p class="section-tag reveal">// Cómo funciona</p>
+    <h2 class="how-title reveal">TRES PASOS</h2>
+    <div class="how-steps">
+
+      <div class="how-step reveal">
+        <div class="step-num">01</div>
+        <h3 class="step-name">PRINT, SELECT, START</h3>
+        <p class="step-desc">Selecciona tu colección de stickers, define la cantidad y regístrala en el sistema. HSS hace el conteo y manda la orden a imprimir.</p>
+      </div>
+
+      <div class="how-step reveal reveal-delay-1">
+        <div class="step-num">02</div>
+        <h3 class="step-name">EMPAQUETAR</h3>
+        <p class="step-desc">Elige qué pedidos van a la línea de producción y en qué zona se trabajan. El sistema organiza la secuencia automáticamente.</p>
+      </div>
+
+      <div class="how-step reveal reveal-delay-2">
+        <div class="step-num">03</div>
+        <h3 class="step-name">LISTO</h3>
+        <p class="step-desc">Los pedidos empaquetados se almacenan en su slot asignado, listos para envío.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══ DESCARGA ══ -->
+  <section id="download">
+    <div class="reveal">
+      <p class="section-tag">// Descarga</p>
+      <h2 class="download-title">DESCARGA<br><span>HSS</span><br>GRATIS</h2>
+      <p class="download-sub">Sistema completo de gestión y almacenamiento de stickers. Hardware y software integrados en un solo kit, incluidos en tu compra.</p>
+    </div>
+    <div class="download-right reveal reveal-delay-1">
+      <div class="download-info">
+        <div class="download-row">
+          <span class="download-label">Versión</span>
+          <span class="download-value">V1.0.0</span>
+        </div>
+        <div class="download-row">
+          <span class="download-label">Sistema operativo</span>
+          <span class="download-value">Windows 10 / 11</span>
+        </div>
+        <div class="download-row">
+          <span class="download-label">Tamaño</span>
+          <span class="download-value">~150 MB</span>
+        </div>
+        <div class="download-row">
+          <span class="download-label">Requiere internet</span>
+          <span class="download-value">Sí</span>
+        </div>
+        <div class="download-row">
+          <span class="download-label">Última actualización</span>
+          <span class="download-value">Mayo 2026</span>
+        </div>
+      </div>
+      <a href="../downloads/hss-setup.exe" download class="btn-download">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15V3M7 10l5 5 5-5M3 17v2a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2"/></svg>
+        Descargar HSS V1.0
+      </a>
+      <p class="download-note">Software incluido en la compra del kit de hardware HSS</p>
+    </div>
+  </section>
+
+  <!-- ══ FOOTER ══ -->
+  <footer>
+    <div class="footer-logo">DAWON<span>.</span>SYSTEMS</div>
+    <div class="footer-copy">© 2026 Dawon Systems · México</div>
+  </footer>
+
+  <script>
+    // ── GALERÍA ──
+    const mainImg   = document.getElementById('main-img');
+    const mainVideo = document.getElementById('main-video');
+    const mainPh    = document.getElementById('main-ph');
+
+    function clearMain() {
+      mainImg.style.display   = 'none';
+      mainVideo.style.display = 'none';
+      mainPh.style.display    = 'none';
+      mainVideo.src = '';
+      document.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
+    }
+
+    function showImage(src, thumb) {
+      clearMain();
+      mainImg.src = src;
+      mainImg.style.display = 'block';
+      thumb.classList.add('active');
+    }
+
+    function showVideo(youtubeId, thumb) {
+      // REEMPLAZAR YOUR_YOUTUBE_ID por el ID real cuando tengas el video
+      if (!youtubeId || youtubeId === 'YOUR_YOUTUBE_ID') {
+        clearMain();
+        mainPh.style.display = 'flex';
+        mainPh.querySelector('span').textContent = 'Video próximamente';
+        thumb.classList.add('active');
+        return;
+      }
+      clearMain();
+      mainVideo.src = `https://www.youtube.com/embed/${youtubeId}?autoplay=1`;
+      mainVideo.style.display = 'block';
+      thumb.classList.add('active');
+    }
+
+    // Cargar primera miniatura al inicio
+    document.querySelector('.thumb').click();
+
+    // ── SCROLL REVEAL ──
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          observer.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    reveals.forEach(el => observer.observe(el));
+  </script>
+
+</body>
+</html>
